@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c0e14" />
+  <meta name="description" content="BatchCook — Tu cocina organizada, tu semana resuelta." />
+  <title>BatchCook</title>
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BatchCook" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <!-- Inline manifest para iOS sin servidor -->
+  <script>
+    (function(){
+      const m={name:"BatchCook",short_name:"BatchCook",start_url:"./",display:"standalone",background_color:"#0c0e14",theme_color:"#0c0e14",orientation:"portrait"};
+      const b=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+      const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);
+      document.currentScript.after(l);
+    })();
+  </script>
+  <!-- Apple touch icon inline SVG convertido a canvas PNG -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230c0e14'/%3E%3Ctext y='128' x='20' font-size='108'%3E%F0%9F%8D%B1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#0c0e14;--surface:#13161f;--surface2:#1a1e2a;--surface3:#222736;--border:rgba(255,255,255,0.07);--accent:#c8f56a;--accent2:#6af0c8;--accent3:#f5a06a;--text:#f0f2f8;--muted:#8891a8;--danger:#ff6b6b;--gold:#f0c060;--radius:18px;--radius-sm:10px;--font-display:'Playfair Display',serif;--font-body:'DM Sans',sans-serif;--nav-h:70px;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + 16px);padding-top:env(safe-area-inset-top);}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;}
+    h1,h2,h3{font-family:var(--font-display);line-height:1.15;}
+    h1{font-size:clamp(2rem,5vw,3rem);font-weight:700;}
+    h2{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:600;}
+    h3{font-size:1.1rem;font-weight:600;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px;}
+    .nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom);}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 12px;border-radius:var(--radius-sm);transition:all .25s ease;border:none;background:none;color:var(--muted);font-family:var(--font-body);font-size:.68rem;font-weight:500;letter-spacing:.03em;text-transform:uppercase;}
+    .nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;}
+    .nav-item.active{color:var(--accent);}
+    .nav-item.active svg{stroke:var(--accent);}
+    .nav-item:hover{color:var(--text);}
+    .page{display:none;animation:fadeUp .4s ease;}
+    .page.active{display:block;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0;}
+    .topbar-logo{font-family:var(--font-display);font-size:1.4rem;font-weight:700;}
+    .topbar-logo span{color:var(--accent);}
+    .topbar-badge{background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.75rem;color:var(--muted);font-weight:500;}
+    .hero{margin:20px;border-radius:var(--radius);background:linear-gradient(135deg,#1a2a14 0%,#0f1f0e 50%,#0c0e14 100%);border:1px solid rgba(200,245,106,.15);padding:28px 24px;position:relative;overflow:hidden;}
+    .hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(200,245,106,.12) 0%,transparent 70%);}
+    .hero-label{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+    .hero h2{color:var(--text);margin-bottom:8px;}
+    .hero p{color:var(--muted);font-size:.9rem;line-height:1.6;}
+    .hero-stats{display:flex;gap:16px;margin-top:20px;}
+    .hero-stat{background:rgba(255,255,255,.05);border-radius:var(--radius-sm);padding:10px 14px;flex:1;border:1px solid var(--border);}
+    .hero-stat-val{font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--accent);}
+    .hero-stat-lab{font-size:.7rem;color:var(--muted);margin-top:2px;}
+    .section{margin:24px 20px 0;}
+    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+    .section-header h3{color:var(--text);}
+    .see-all{font-size:.8rem;color:var(--accent);cursor:pointer;background:none;border:none;font-family:var(--font-body);font-weight:500;}
+    .cards-row{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+    .cards-row::-webkit-scrollbar{display:none;}
+    .recipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-width:220px;flex-shrink:0;cursor:pointer;transition:all .3s ease;position:relative;overflow:hidden;}
+    .recipe-card:hover{border-color:rgba(200,245,106,.3);transform:translateY(-2px);}
+    .recipe-card-emoji{font-size:2.2rem;margin-bottom:12px;}
+    .recipe-card-name{font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:6px;}
+    .recipe-card-meta{display:flex;gap:8px;flex-wrap:wrap;}
+    .tag{font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:50px;border:1px solid;display:inline-flex;align-items:center;gap:4px;}
+    .tag-freeze{border-color:rgba(106,240,200,.4);color:var(--accent2);background:rgba(106,240,200,.07);}
+    .tag-fridge{border-color:rgba(106,160,245,.4);color:#6aa8f5;background:rgba(106,160,245,.07);}
+    .tag-nofreeze{border-color:rgba(255,107,107,.4);color:var(--danger);background:rgba(255,107,107,.07);}
+    .tag-time{border-color:var(--border);color:var(--muted);background:transparent;}
+    .tag-portions{border-color:rgba(240,192,96,.4);color:var(--gold);background:rgba(240,192,96,.07);}
+    .storage-item{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .25s ease;}
+    .storage-item:hover{border-color:rgba(200,245,106,.25);}
+    .storage-item-icon{font-size:1.6rem;flex-shrink:0;}
+    .storage-item-info{flex:1;}
+    .storage-item-name{font-weight:500;font-size:.95rem;}
+    .storage-item-date{font-size:.75rem;color:var(--muted);margin-top:2px;}
+    .storage-item-qty{font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--accent);flex-shrink:0;}
+    .expiry-bar{height:3px;border-radius:3px;margin-top:8px;overflow:hidden;background:var(--surface3);}
+    .expiry-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+    .expiry-ok{background:var(--accent);}
+    .expiry-warn{background:var(--accent3);}
+    .expiry-bad{background:var(--danger);}
+    .fab{position:fixed;bottom:calc(var(--nav-h) + 16px);right:20px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#0c0e14;border:none;cursor:pointer;font-size:1.5rem;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 30px rgba(200,245,106,.4);transition:all .25s ease;z-index:50;}
+    .fab:hover{transform:scale(1.08);}
+    .fab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.2;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);}
+    .modal-overlay.open{display:flex;animation:fadeIn .2s ease;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;animation:slideUp .35s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+    .modal-handle{width:36px;height:4px;background:var(--surface3);border-radius:4px;margin:14px auto 0;}
+    .modal-body{padding:20px 24px 40px;}
+    .modal-title{font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px;}
+    .modal-sub{color:var(--muted);font-size:.85rem;margin-bottom:20px;}
+    .recipe-detail-emoji{font-size:3.5rem;text-align:center;margin:10px 0 16px;}
+    .detail-section{margin-top:20px;}
+    .detail-section h4{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+    .step-item{display:flex;gap:12px;margin-bottom:12px;}
+    .step-num{width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;color:var(--accent);}
+    .step-text{font-size:.88rem;color:var(--text);line-height:1.6;padding-top:3px;}
+    .storage-guide{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;}
+    .storage-guide-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .storage-guide-row:last-child{margin-bottom:0;}
+    .storage-guide-icon{font-size:1.3rem;}
+    .storage-guide-info{flex:1;}
+    .storage-guide-label{font-size:.8rem;font-weight:600;}
+    .storage-guide-val{font-size:.75rem;color:var(--muted);}
+    .form-group{margin-bottom:16px;}
+    .form-label{font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block;}
+    .form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:.9rem;outline:none;transition:border-color .2s ease;}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(200,245,106,.5);}
+    .form-select option{background:var(--surface2);}
+    .form-textarea{resize:vertical;min-height:80px;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .btn{padding:14px 24px;border-radius:var(--radius-sm);font-family:var(--font-body);font-weight:600;font-size:.9rem;cursor:pointer;border:none;transition:all .25s ease;display:inline-flex;align-items:center;gap:8px;}
+    .btn-primary{background:var(--accent);color:#0c0e14;box-shadow:0 4px 20px rgba(200,245,106,.25);}
+    .btn-primary:hover{box-shadow:0 6px 28px rgba(200,245,106,.4);transform:translateY(-1px);}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+    .btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text);}
+    .btn-danger{background:rgba(255,107,107,.15);color:var(--danger);border:1px solid rgba(255,107,107,.3);}
+    .btn-full{width:100%;justify-content:center;}
+    .btn-group{display:flex;gap:10px;margin-top:20px;}
+    .guide-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
+    .guide-card-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .guide-card-icon{font-size:1.8rem;}
+    .guide-card-title{font-family:var(--font-display);font-size:1.05rem;font-weight:600;}
+    .guide-card-sub{font-size:.75rem;color:var(--muted);}
+    .guide-list{list-style:none;}
+    .guide-list li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;line-height:1.5;}
+    .guide-list li:last-child{border-bottom:none;}
+    .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0;}
+    .day-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 6px;text-align:center;cursor:pointer;transition:all .25s ease;min-height:70px;}
+    .day-cell:hover,.day-cell.active{border-color:rgba(200,245,106,.4);background:var(--surface2);}
+    .day-cell.today{border-color:rgba(200,245,106,.6);}
+    .day-name{font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+    .day-num{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--text);}
+    .day-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);margin:4px auto 0;}
+    .meal-plan-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+    .meal-plan-type{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:60px;}
+    .meal-plan-name{flex:1;font-size:.88rem;font-weight:500;}
+    .meal-plan-emoji{font-size:1.3rem;}
+    .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;margin-bottom:16px;}
+    .chips::-webkit-scrollbar{display:none;}
+    .chip{padding:7px 16px;border-radius:50px;border:1px solid var(--border);font-size:.78rem;font-weight:500;cursor:pointer;white-space:nowrap;background:var(--surface);color:var(--muted);transition:all .2s ease;}
+    .chip.active{background:var(--accent);color:#0c0e14;border-color:var(--accent);}
+    .chip:hover:not(.active){border-color:rgba(255,255,255,.2);color:var(--text);}
+    .empty-state{text-align:center;padding:48px 20px;}
+    .empty-state-icon{font-size:3rem;margin-bottom:12px;}
+    .empty-state h3{margin-bottom:8px;}
+    .empty-state p{font-size:.85rem;color:var(--muted);line-height:1.6;max-width:260px;margin:0 auto 20px;}
+    .notif-banner{margin:12px 20px 0;background:rgba(245,160,106,.1);border:1px solid rgba(245,160,106,.3);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--accent3);}
+    .notif-banner.hidden{display:none;}
+    .divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+    /* Recipe grid para la página de recetas */
+    #recipe-grid .recipe-card{min-width:unset;width:100%;margin-bottom:12px;}
+    #recipe-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media(max-width:380px){#recipe-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="topbar">
+    <div class="topbar-logo">Batch<span>Cook</span></div>
+    <div class="topbar-badge" id="today-label">…</div>
+  </div>
+  <div id="expiry-banner" class="notif-banner hidden">
+    <span>⚠️</span><span id="expiry-msg"></span>
+  </div>
+  <div class="hero">
+    <div class="hero-label">🔥 Tu semana organizada</div>
+    <h2>Cocina una vez,<br>come toda la semana.</h2>
+    <p>Controla tus preparaciones, almacenamiento y menús semanales en un solo lugar.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-val" id="stat-stored">0</div><div class="hero-stat-lab">Guardados</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="stat-frozen">0</div><div class="hero-stat-lab">Congelados</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="stat-recipes">62</div><div class="hero-stat-lab">Recetas</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><h3>Recetas populares</h3><button class="see-all" onclick="showPage('page-recipes');setNav(1)">Ver todas →</button></div>
+    <div class="cards-row" id="home-recipes-row"></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><h3>Despensa activa</h3><button class="see-all" onclick="showPage('page-pantry');setNav(2)">Ver toda →</button></div>
+    <div id="home-pantry-list"></div>
+  </div>
+</div>
+
+<!-- RECETAS -->
+<div class="page" id="page-recipes">
+  <div class="topbar"><div class="topbar-logo">Batch<span>Cook</span></div><div class="topbar-badge">62 Recetas</div></div>
+  <div class="section" style="margin-top:16px;">
+    <div class="chips" id="recipe-chips">
+      <div class="chip active" data-filter="all">Todas</div>
+      <div class="chip" data-filter="freeze">❄️ Congelables</div>
+      <div class="chip" data-filter="fridge">🧊 Nevera</div>
+      <div class="chip" data-filter="quick">⚡ Rápidas</div>
+      <div class="chip" data-filter="legumes">🫘 Legumbres</div>
+      <div class="chip" data-filter="meat">🥩 Carnes</div>
+      <div class="chip" data-filter="veggie">🥦 Vegetariana</div>
+    </div>
+    <div id="recipe-grid"></div>
+  </div>
+</div>
+
+<!-- DESPENSA -->
+<div class="page" id="page-pantry">
+  <div class="topbar"><div class="topbar-logo">Batch<span>Cook</span></div><div class="topbar-badge">Despensa</div></div>
+  <div class="section" style="margin-top:16px;">
+    <div class="chips" id="pantry-chips">
+      <div class="chip active" data-pfilter="all">Todo</div>
+      <div class="chip" data-pfilter="fridge">🧊 Nevera</div>
+      <div class="chip" data-pfilter="freezer">❄️ Congelador</div>
+      <div class="chip" data-pfilter="room">🌡️ Ambiente</div>
+    </div>
+    <div id="pantry-list"></div>
+    <div id="pantry-empty" class="empty-state hidden">
+      <div class="empty-state-icon">🍱</div>
+      <h3>Despensa vacía</h3>
+      <p>Añade platos cocinados para llevar un control de lo que tienes en casa.</p>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Añadir plato</button>
+    </div>
+  </div>
+</div>
+
+<!-- GUÍA -->
+<div class="page" id="page-guide">
+  <div class="topbar"><div class="topbar-logo">Batch<span>Cook</span></div><div class="topbar-badge">Guía</div></div>
+  <div class="section" style="margin-top:16px;">
+    <div class="guide-card">
+      <div class="guide-card-header"><div class="guide-card-icon">❄️</div><div><div class="guide-card-title">¿Qué se puede congelar?</div><div class="guide-card-sub">Alimentos aptos para el congelador</div></div></div>
+      <ul class="guide-list">
+        <li><span>✅</span> Sopas, cremas y caldos (enfriar antes)</li>
+        <li><span>✅</span> Carnes y aves cocinadas (sin salsas cremosas)</li>
+        <li><span>✅</span> Legumbres cocidas (garbanzos, lentejas, alubias)</li>
+        <li><span>✅</span> Arroces y pasta <em>sin salsa</em></li>
+        <li><span>✅</span> Pan, masa de pizza y masas horneadas</li>
+        <li><span>✅</span> Verduras blanqueadas (brócoli, guisantes, zanahoria)</li>
+        <li><span>✅</span> Salsas de tomate, pesto y mole</li>
+        <li><span>✅</span> Platos cocinados tipo guiso o estofado</li>
+      </ul>
+    </div>
+    <div class="guide-card">
+      <div class="guide-card-header"><div class="guide-card-icon">🚫</div><div><div class="guide-card-title">NO apto para congelar</div><div class="guide-card-sub">Pierden textura o son peligrosos al descongelar</div></div></div>
+      <ul class="guide-list">
+        <li><span>❌</span> Salsas con nata o leche (se cortan)</li>
+        <li><span>❌</span> Patatas cocidas o en puré (se vuelven arenosas)</li>
+        <li><span>❌</span> Huevos duros o revueltos (textura gomosa)</li>
+        <li><span>❌</span> Lechuga y hojas verdes crudas</li>
+        <li><span>❌</span> Mayonesa y emulsiones</li>
+        <li><span>❌</span> Frutas con alto contenido en agua (melón, sandía)</li>
+        <li><span>❌</span> Pescado rebozado ya frito</li>
+        <li><span>❌</span> Quesos frescos (ricotta, mozzarella fresca)</li>
+      </ul>
+    </div>
+    <div class="guide-card">
+      <div class="guide-card-header"><div class="guide-card-icon">⏱️</div><div><div class="guide-card-title">Tiempos de conservación</div><div class="guide-card-sub">Referencia de duración óptima</div></div></div>
+      <ul class="guide-list">
+        <li><span>🧊</span> <strong>Nevera:</strong> Guisos y sopas — 3–4 días</li>
+        <li><span>🧊</span> <strong>Nevera:</strong> Carnes cocinadas — 3–4 días</li>
+        <li><span>🧊</span> <strong>Nevera:</strong> Arroz y pasta cocidos — 2–3 días</li>
+        <li><span>🧊</span> <strong>Nevera:</strong> Verduras al vapor — 4–5 días</li>
+        <li><span>❄️</span> <strong>Congelador:</strong> Carnes — hasta 3 meses</li>
+        <li><span>❄️</span> <strong>Congelador:</strong> Sopas y guisos — 2–3 meses</li>
+        <li><span>❄️</span> <strong>Congelador:</strong> Legumbres cocidas — 3 meses</li>
+        <li><span>❄️</span> <strong>Congelador:</strong> Verduras — hasta 6 meses</li>
+      </ul>
+    </div>
+    <div class="guide-card">
+      <div class="guide-card-header"><div class="guide-card-icon">📦</div><div><div class="guide-card-title">Cómo envasar correctamente</div><div class="guide-card-sub">Consejos para conservación óptima</div></div></div>
+      <ul class="guide-list">
+        <li><span>🌡️</span> Enfría siempre los platos <strong>antes</strong> de guardar</li>
+        <li><span>🏷️</span> Etiqueta siempre con nombre y <strong>fecha de envasado</strong></li>
+        <li><span>🔒</span> Usa recipientes herméticos de cristal o apto congelar</li>
+        <li><span>📏</span> Deja espacio al congelar — los líquidos <strong>se expanden</strong></li>
+        <li><span>🛍️</span> Bolsas zip aptas para freezer eliminan el exceso de aire</li>
+        <li><span>🔄</span> Descongela siempre en nevera, nunca a temperatura ambiente</li>
+        <li><span>📐</span> Congela en <strong>raciones individuales</strong></li>
+      </ul>
+    </div>
+    <div class="guide-card">
+      <div class="guide-card-header"><div class="guide-card-icon">🗓️</div><div><div class="guide-card-title">Plan batch cooking semanal</div><div class="guide-card-sub">Estructura sugerida para el domingo</div></div></div>
+      <ul class="guide-list">
+        <li><span>1️⃣</span> <strong>Planifica:</strong> decide los platos de la semana</li>
+        <li><span>2️⃣</span> <strong>Lista de compra:</strong> ingredientes agrupados</li>
+        <li><span>3️⃣</span> <strong>Prepara primero</strong> lo que tarda más</li>
+        <li><span>4️⃣</span> <strong>Aprovecha tiempos:</strong> multitarea en la cocina</li>
+        <li><span>5️⃣</span> <strong>Enfría y envasa</strong> antes de guardar</li>
+        <li><span>6️⃣</span> <strong>Etiqueta</strong> todo con fecha</li>
+        <li><span>7️⃣</span> <strong>Registra en BatchCook</strong> lo que guardas</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MENÚ -->
+<div class="page" id="page-plan">
+  <div class="topbar"><div class="topbar-logo">Batch<span>Cook</span></div><div class="topbar-badge">Menú semanal</div></div>
+  <div class="section" style="margin-top:16px;">
+    <div class="week-grid" id="week-grid"></div>
+    <div class="section-header">
+      <h3 id="selected-day-label">Hoy</h3>
+      <button class="see-all" onclick="openPlanModal()">+ Añadir</button>
+    </div>
+    <div id="day-meals-list"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-item active" onclick="showPage('page-home');setNav(0)">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio
+  </button>
+  <button class="nav-item" onclick="showPage('page-recipes');setNav(1)">
+    <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 8v4l3 3"/></svg>Recetas
+  </button>
+  <button class="nav-item" onclick="showPage('page-pantry');setNav(2)">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Despensa
+  </button>
+  <button class="nav-item" onclick="showPage('page-guide');setNav(3)">
+    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Guía
+  </button>
+  <button class="nav-item" onclick="showPage('page-plan');setNav(4)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Menú
+  </button>
+</nav>
+
+<button class="fab" onclick="handleFab()">
+  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- MODAL RECETA -->
+<div class="modal-overlay" id="recipe-modal">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-body" id="recipe-modal-body"></div></div>
+</div>
+
+<!-- MODAL AÑADIR DESPENSA -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-body">
+      <div class="modal-title">Añadir a despensa</div>
+      <div class="modal-sub">Registra un plato cocinado y cómo lo has almacenado</div>
+      <div class="form-group"><label class="form-label">Nombre del plato</label><input class="form-input" id="add-name" type="text" placeholder="Ej: Lentejas con verduras" /></div>
+      <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="add-emoji" type="text" placeholder="🍲" maxlength="2" /></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Raciones</label><input class="form-input" id="add-qty" type="number" min="1" value="4" /></div>
+        <div class="form-group"><label class="form-label">Almacenamiento</label>
+          <select class="form-select" id="add-storage"><option value="fridge">🧊 Nevera</option><option value="freezer">❄️ Congelador</option><option value="room">🌡️ Ambiente</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Fecha de envasado</label><input class="form-input" id="add-date" type="date" /></div>
+      <div class="form-group"><label class="form-label">Caducidad estimada</label><input class="form-input" id="add-expiry" type="date" /></div>
+      <div class="form-group"><label class="form-label">Notas</label><textarea class="form-textarea" id="add-notes" placeholder="Ej: Sin sal añadida. Descongelar 12h antes."></textarea></div>
+      <div class="btn-group">
+        <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancelar</button>
+        <button class="btn btn-primary btn-full" onclick="savePantryItem()">✓ Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PLAN -->
+<div class="modal-overlay" id="plan-modal">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="plan-modal-title">Añadir al menú</div>
+      <div class="form-group"><label class="form-label">Tipo de comida</label>
+        <select class="form-select" id="plan-meal-type"><option>Desayuno</option><option>Comida</option><option>Cena</option><option>Merienda</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Plato</label><select class="form-select" id="plan-dish"><option value="">— Elige —</option></select></div>
+      <div class="btn-group">
+        <button class="btn btn-ghost" onclick="closeModal('plan-modal')">Cancelar</button>
+        <button class="btn btn-primary btn-full" onclick="savePlanItem()">✓ Añadir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const RECIPES=[
+  {id:1,emoji:'🍲',name:'Lentejas estofadas',cat:['legumes','freeze'],time:'45 min',portions:6,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Congela en raciones individuales. Descongela en nevera la noche anterior.',ingredients:['500g lentejas','2 zanahorias','1 puerro','2 dientes ajo','Laurel','Pimentón','Aceite','Sal'],steps:['Pon las lentejas en remojo 1h si son pardinas.','Sofríe ajo y puerro en aceite 5 min.','Añade zanahoria y pimentón, remueve 1 min.','Incorpora lentejas, cubre con caldo y añade laurel.','Cocina 35 min a fuego suave. Salpimenta.']},
+  {id:2,emoji:'🍗',name:'Pollo al horno con hierbas',cat:['meat','freeze'],time:'60 min',portions:4,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'Deshúesa antes de congelar. Úsalo en ensaladas, bowls o wraps.',ingredients:['1 kg muslos de pollo','Romero y tomillo','4 dientes ajo','Limón','Aceite','Sal y pimienta'],steps:['Mezcla aceite, ajo, hierbas, limón, sal y pimienta.','Marina el pollo al menos 30 min.','Precalienta horno a 200°C.','Hornea 45–55 min hasta dorar.','Deja enfriar antes de envasar.']},
+  {id:3,emoji:'🥕',name:'Crema de verduras',cat:['veggie','freeze'],time:'35 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Congela sin lácteos. Añade nata o queso fresco al recalentar.',ingredients:['500g calabaza','2 zanahorias','1 puerro','Caldo vegetal','Aceite','Sal y nuez moscada'],steps:['Pela y trocea las verduras.','Sofríe el puerro 4 min.','Añade verduras y cubre con caldo.','Cocina 20 min hasta que estén blandas.','Tritura y ajusta sal.']},
+  {id:4,emoji:'🥗',name:'Bowl de quinoa mediterráneo',cat:['veggie','fridge','quick'],time:'20 min',portions:3,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'Guarda el aliño por separado. La quinoa aguanta bien 3 días en nevera.',ingredients:['200g quinoa','Tomates cherry','Pepino','Aceitunas','Queso feta','Limón','Aceite','Orégano'],steps:['Cocina la quinoa 15 min (proporción 1:2 agua).','Deja enfriar extendida.','Prepara aliño: limón, aceite, orégano, sal.','Mezcla quinoa con verduras troceadas.','Guarda aliño aparte.']},
+  {id:5,emoji:'🫘',name:'Garbanzos con espinacas',cat:['legumes','freeze','veggie'],time:'30 min',portions:4,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Rico en hierro y proteína vegetal. Se congela perfectamente.',ingredients:['400g garbanzos cocidos','300g espinacas','2 dientes ajo','Comino','Pimentón','Aceite','Sal'],steps:['Dora el ajo laminado en aceite.','Añade espinacas y saltea hasta que mengüen.','Incorpora garbanzos y especias.','Cocina 10 min a fuego suave.','Ajusta sal y enfría antes de envasar.']},
+  {id:6,emoji:'🍝',name:'Ragú de ternera',cat:['meat','freeze'],time:'90 min',portions:6,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Congela la salsa sola. Cuece la pasta el día que lo consumas.',ingredients:['500g carne picada ternera','1 lata tomate','1 cebolla','2 zanahorias','Vino tinto','Laurel','Aceite','Sal'],steps:['Sofríe cebolla y zanahoria 8 min.','Añade la carne y dora desmenuzando.','Incorpora el vino y deja evaporar.','Añade tomate, laurel y cocina tapado 60 min.','Destapa 15 min para concentrar.']},
+  {id:7,emoji:'🥦',name:'Brócoli al vapor con ajo',cat:['veggie','fridge','quick'],time:'15 min',portions:4,storage:{fridge:'4 días',freezer:'2 meses',canFreeze:true},tip:'Para congelar: blanquea 2 min, enfría en agua helada y congela extendido.',ingredients:['800g brócoli','3 dientes ajo','Aceite','Sal','Limón'],steps:['Divide el brócoli en ramilletes.','Cocina al vapor 8–10 min (al dente).','Dora el ajo laminado en aceite.','Mezcla con el aceite de ajo. Salpimenta.','Enfría completamente antes de guardar.']},
+  {id:8,emoji:'🍚',name:'Arroz basmati pilaf',cat:['fridge','quick'],time:'20 min',portions:4,storage:{fridge:'2 días',freezer:null,canFreeze:false},tip:'Enfría rápido y guarda en nevera. Recalienta bien hasta que esté humeante.',ingredients:['300g arroz basmati','Caldo vegetal','1 cebolla','Cardamomo','Canela','Aceite','Sal'],steps:['Lava el arroz hasta que el agua salga clara.','Sofríe la cebolla con especias 5 min.','Añade el arroz y remueve 1 min.','Cubre con caldo (1:1.5) y cocina tapado 12 min.','Reposa 5 min antes de enfriar.']},
+  {id:9,emoji:'🫙',name:'Salsa de tomate casera',cat:['freeze','quick','veggie'],time:'40 min',portions:8,storage:{fridge:'5 días',freezer:'4 meses',canFreeze:true},tip:'Congela en cubiteras para usar cantidades pequeñas cuando necesites.',ingredients:['1 kg tomates','1 cebolla','3 dientes ajo','Albahaca','Aceite','Sal','Azúcar'],steps:['Sofríe cebolla y ajo 8 min.','Añade los tomates troceados.','Cocina 25 min a fuego medio-bajo.','Añade albahaca, sal y azúcar.','Tritura o deja en trozos.']},
+  {id:10,emoji:'🥩',name:'Ternera guisada',cat:['meat','freeze'],time:'75 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Mejora de sabor al día siguiente. Descongela en nevera 24h antes.',ingredients:['700g ternera en dados','2 cebollas','2 zanahorias','Caldo','Vino tinto','Tomillo','Aceite','Sal'],steps:['Sella la carne en aceite muy caliente.','Sofríe la cebolla y zanahoria 6 min.','Incorpora la carne y el vino.','Cubre con caldo, añade tomillo y cocina tapado 60 min.','Reduce la salsa si es necesario.']},
+  {id:11,emoji:'🍣',name:'Salmón teriyaki al horno',cat:['meat','fridge'],time:'25 min',portions:4,storage:{fridge:'2 días',freezer:null,canFreeze:false},tip:'El pescado no aguanta bien congelado ya cocinado. Consúmelo en 2 días.',ingredients:['4 lomos salmón','Salsa soja','Miel','Jengibre','Ajo','Aceite sésamo'],steps:['Mezcla soja, miel, jengibre, ajo y aceite de sésamo.','Marina el salmón 30 min.','Precalienta horno a 200°C.','Hornea 12–15 min.','Enfría rápido y guarda en nevera.']},
+  {id:12,emoji:'🫑',name:'Pisto manchego',cat:['veggie','freeze','fridge'],time:'45 min',portions:5,storage:{fridge:'5 días',freezer:'2 meses',canFreeze:true},tip:'Versátil: sirve de guarnición, relleno de wraps o con huevos.',ingredients:['2 calabacines','1 berenjena','2 pimientos','1 cebolla','400g tomate','Aceite','Sal'],steps:['Corta todas las verduras en dados.','Sofríe cebolla y pimientos 10 min.','Añade berenjena y calabacín 10 min.','Incorpora el tomate y cocina tapado 20 min.','Destapa 5 min y salpimenta.']},
+  {id:13,emoji:'🍜',name:'Caldo de pollo casero',cat:['freeze'],time:'90 min',portions:8,storage:{fridge:'4 días',freezer:'4 meses',canFreeze:true},tip:'Congela en botes de 500ml. Base perfecta para arroces, sopas y salsas.',ingredients:['1 carcasa de pollo','2 zanahorias','1 puerro','1 apio','1 cebolla','Sal','Pimienta','Laurel'],steps:['Pon todo en olla con agua fría.','Lleva a ebullición y retira la espuma.','Cocina tapado 80 min a fuego suave.','Cuela el caldo y desecha sólidos.','Desgrasa una vez frío.']},
+  {id:14,emoji:'🥣',name:'Gazpacho andaluz',cat:['veggie','fridge','quick'],time:'15 min',portions:6,storage:{fridge:'4 días',freezer:null,canFreeze:false},tip:'No se congela bien. Sirve muy frío. Mejor de un día para otro.',ingredients:['1 kg tomates','1 pepino','1 pimiento verde','1 diente ajo','50ml vinagre jerez','100ml AOVE','Sal','Pan duro opcional'],steps:['Trocea todos los vegetales.','Añade vinagre, aceite y sal.','Tritura 3 min a máxima potencia.','Pasa por colador fino.','Refrigera al menos 2 horas.']},
+  {id:15,emoji:'🫕',name:'Sopa de cebolla gratinada',cat:['veggie','freeze'],time:'60 min',portions:4,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'Congela solo el caldo sin pan ni queso. Añade toppings frescos al servir.',ingredients:['4 cebollas','1L caldo','100ml vino blanco','Mantequilla','Tomillo','Pan de hogaza','Gruyère'],steps:['Sofríe cebollas en juliana a fuego muy bajo 40 min hasta caramelizar.','Añade el vino y deja evaporar.','Incorpora el caldo y tomillo 10 min.','Sirve con pan tostado y queso gratinado.','Para batch: congela solo el caldo.']},
+  {id:16,emoji:'🥬',name:'Crema de calabacín y menta',cat:['veggie','freeze','quick'],time:'25 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Añade la menta fresca solo al servir. Congela la base sin ella.',ingredients:['4 calabacines','1 cebolla','Caldo vegetal','Menta fresca','Aceite','Sal','Yogur griego opcional'],steps:['Trocea calabacín y cebolla.','Sofríe la cebolla 5 min, añade calabacín 5 min más.','Cubre con caldo y cocina 15 min.','Tritura y ajusta sal.','Al servir añade menta y yogur.']},
+  {id:17,emoji:'🍅',name:'Sopa de tomate y albahaca',cat:['veggie','freeze'],time:'40 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Congela sin la nata. Al recalentar añade un chorrito para mayor cremosidad.',ingredients:['1.2 kg tomates pera','1 cebolla','3 dientes ajo','Albahaca','Caldo vegetal','Aceite','Sal','Azúcar'],steps:['Asa los tomates y ajo en horno a 180°C 25 min.','Sofríe la cebolla en aceite.','Añade tomates asados y caldo.','Tritura y pasa por colador.','Sazona y añade albahaca al servir.']},
+  {id:18,emoji:'🌽',name:'Crema de maíz y coco',cat:['veggie','freeze'],time:'30 min',portions:4,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'La leche de coco aporta cremosidad sin lácteos. Congela perfectamente.',ingredients:['500g maíz dulce','400ml leche de coco','1 cebolla','1 ajo','Caldo','Jengibre','Sal','Lima'],steps:['Sofríe cebolla, ajo y jengibre 5 min.','Añade maíz y rehoga 3 min.','Incorpora caldo y leche de coco.','Cocina 15 min y tritura.','Sirve con ralladura de lima.']},
+  {id:19,emoji:'🍛',name:'Pollo al curry con coco',cat:['meat','freeze'],time:'40 min',portions:4,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'Congela sin el arroz. Las salsas de coco se congelan mejor que las de nata.',ingredients:['600g pechuga','400ml leche de coco','1 cebolla','Pasta de curry rojo','Jengibre','Ajo','Aceite de coco','Cilantro'],steps:['Sofríe cebolla, ajo y jengibre 4 min.','Añade pasta de curry y remueve 1 min.','Incorpora el pollo troceado y sella.','Añade leche de coco y cocina 20 min.','Ajusta sal y sirve con cilantro.']},
+  {id:20,emoji:'🌮',name:'Pulled pork (cerdo desmenuzado)',cat:['meat','freeze'],time:'180 min',portions:8,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Ideal para batch: una cocción da para tacos, bocadillos y bowls toda la semana.',ingredients:['1.2 kg paleta de cerdo','Pimentón ahumado','Ajo en polvo','Comino','Cebolla en polvo','Salsa BBQ','Sal y pimienta'],steps:['Mezcla especias y frota la carne.','Cocina en cocotte con agua 3h a fuego mínimo.','La carne estará lista cuando se deshaga con tenedor.','Desmenuza con dos tenedores y mezcla con BBQ.','Divide en porciones y congela en bolsas zip.']},
+  {id:21,emoji:'🍖',name:'Albóndigas en salsa de tomate',cat:['meat','freeze'],time:'55 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Se congelan perfectamente en su salsa. Descongela en nevera 12h antes.',ingredients:['500g carne picada mixta','1 huevo','Pan rallado','Ajo','Perejil','1 lata tomate','1 cebolla','Vino blanco'],steps:['Mezcla carne, huevo, pan rallado, ajo y perejil. Forma albóndigas.','Dora las albóndigas en aceite. Reserva.','En el mismo aceite sofríe la cebolla, añade vino y tomate.','Cocina la salsa 10 min y añade las albóndigas.','Cocina todo 20 min a fuego suave.']},
+  {id:22,emoji:'🥚',name:'Tortilla española de patatas',cat:['veggie','fridge'],time:'40 min',portions:4,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'No se congela bien. Consúmela en 3 días. Mejor fría o a temperatura ambiente.',ingredients:['4 patatas medianas','6 huevos','1 cebolla','Aceite de oliva','Sal'],steps:['Corta patatas en rodajas finas y lamina la cebolla.','Fríe lentamente en aceite abundante 20 min.','Escurre y mezcla con huevos batidos y sal.','Cuaja en sartén antiadherente a fuego medio, da la vuelta.','Deja reposar 5 min antes de guardar.']},
+  {id:23,emoji:'🍖',name:'Estofado de cordero',cat:['meat','freeze'],time:'100 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Mejora considerablemente de un día para otro. Ideal preparar el domingo.',ingredients:['700g pierna de cordero','1 cebolla','3 dientes ajo','Romero','Tomate triturado','Vino tinto','Caldo','Aceite'],steps:['Sella el cordero en aceite caliente. Reserva.','Sofríe cebolla y ajo 6 min.','Añade el vino y reduce a la mitad.','Incorpora tomate, romero y caldo. Añade el cordero.','Cocina tapado 80 min a fuego bajo.']},
+  {id:24,emoji:'🍗',name:'Pollo tikka masala',cat:['meat','freeze'],time:'50 min',portions:4,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'La salsa se congela perfectamente. Añade nata fresca al recalentar.',ingredients:['600g pechuga','Yogur griego','Garam masala','Cúrcuma','Tomate triturado','Cebolla','Ajo','Jengibre','Nata'],steps:['Marina el pollo en yogur con especias 1 hora mínimo.','Dora el pollo marinado y reserva.','Sofríe cebolla, ajo y jengibre. Añade especias y tomate.','Cocina la salsa 15 min, añade pollo y nata.','Cocina 10 min más a fuego suave.']},
+  {id:25,emoji:'🥓',name:'Carrilleras de cerdo al vino tinto',cat:['meat','freeze'],time:'120 min',portions:4,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Se congelan perfectamente y mejoran al recalentarlas.',ingredients:['800g carrilleras','1 botella vino tinto','2 cebollas','2 zanahorias','Ajo','Tomillo','Laurel','Aceite'],steps:['Sella las carrilleras en aceite muy caliente. Reserva.','Sofríe cebolla, zanahoria y ajo.','Incorpora el vino y hierbas. Reduce un tercio.','Añade carrilleras y caldo hasta cubrir. Cocina tapado 90 min.','Reduce la salsa hasta textura de glaseado.']},
+  {id:26,emoji:'🍗',name:'Pechugas a la plancha (base)',cat:['meat','fridge','quick'],time:'15 min',portions:4,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'La base más versátil del batch cooking: ensaladas, sándwiches, wraps o con cualquier salsa.',ingredients:['4 pechugas de pollo','Aceite','Ajo en polvo','Pimentón','Sal','Pimienta'],steps:['Aplana las pechugas con film para igual grosor.','Aliña con aceite, especias, sal y pimienta.','Cocina en plancha caliente 4–5 min por lado.','No cortes hasta enfriar para retener jugos.','Para congelar: congela en bolsas individuales.']},
+  {id:27,emoji:'🫕',name:'Ropa vieja',cat:['meat','freeze'],time:'90 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Aprovecha la carne sobrante del cocido. El sabor mejora al día siguiente.',ingredients:['500g morcillo cocido','Pimientos rojos y verdes','1 cebolla','Tomate triturado','Ajo','Comino','Pimentón','Aceite'],steps:['Desmenuza la carne cocida.','Sofríe cebolla, ajo y pimientos 10 min.','Añade tomate y especias. Cocina 10 min.','Incorpora la carne y mezcla bien.','Cocina 15 min más a fuego suave.']},
+  {id:28,emoji:'🍆',name:'Berenjena rellena de verduras',cat:['veggie','fridge'],time:'50 min',portions:4,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'No apta para congelar. Prepara con 2–3 días de antelación.',ingredients:['4 berenjenas','1 pimiento rojo','1 tomate','1 cebolla','Queso rallado','Aceite','Sal','Orégano'],steps:['Parte berenjenas y hornea boca abajo a 180°C 20 min.','Vacía la pulpa y pícala.','Sofríe cebolla, pimiento y pulpa. Añade tomate 10 min.','Rellena y cubre con queso rallado.','Gratina 10 min. Enfría antes de refrigerar.']},
+  {id:29,emoji:'🧆',name:'Falafel de garbanzos',cat:['veggie','freeze'],time:'45 min',portions:5,storage:{fridge:'4 días',freezer:'2 meses',canFreeze:true},tip:'Congela ya fritos. Recalienta en horno a 180°C 10 min directamente del congelador.',ingredients:['400g garbanzos secos remojados','Perejil y cilantro','1 cebolla','3 dientes ajo','Comino','Harina de garbanzo','Sal','Aceite para freír'],steps:['Escurre los garbanzos (deben estar crudos, solo remojados).','Tritura con cebolla, ajo, hierbas y especias (textura granulada).','Añade harina hasta que la masa no se pegue. Reposa 30 min.','Forma bolitas y fríe en aceite caliente 3–4 min por lado.','Escurre en papel y enfría antes de envasar.']},
+  {id:30,emoji:'🥜',name:'Hummus casero',cat:['veggie','fridge','quick'],time:'15 min',portions:6,storage:{fridge:'5 días',freezer:'1 mes',canFreeze:true},tip:'Cubre la superficie con aceite de oliva para evitar que se reseque en nevera.',ingredients:['400g garbanzos cocidos','3 cdas tahini','Zumo de 1 limón','1 diente ajo','Comino','Aceite AOVE','Sal','Pimentón'],steps:['Escurre los garbanzos reservando el líquido.','Tritura con tahini, limón, ajo y sal.','Añade líquido poco a poco hasta textura sedosa.','Prueba y ajusta de limón y sal.','Sirve con aceite y pimentón.']},
+  {id:31,emoji:'🌶️',name:'Chili sin carne',cat:['veggie','legumes','freeze'],time:'50 min',portions:6,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Mejora de un día para otro. Congela en porciones individuales.',ingredients:['2 latas alubias negras','1 lata tomate','2 pimientos','1 cebolla','Chili en polvo','Comino','Maíz dulce','Ajo','Aceite'],steps:['Sofríe cebolla, ajo y pimientos 8 min.','Añade chili y comino. Remueve 1 min.','Incorpora tomate, alubias y maíz.','Cocina 30 min a fuego medio removiendo.','Ajusta sal y especias.']},
+  {id:32,emoji:'🥗',name:'Ensalada de lentejas beluga',cat:['legumes','veggie','fridge'],time:'30 min',portions:4,storage:{fridge:'4 días',freezer:null,canFreeze:false},tip:'Las lentejas beluga no se deshacen. Guarda el aliño aparte hasta el momento de comer.',ingredients:['300g lentejas beluga','Tomates cherry','Pepino','Pimiento rojo','Cebolla roja','Perejil','Limón','Aceite','Mostaza'],steps:['Cuece las lentejas beluga 20 min. No deben quedar blandas.','Escurre y refresca con agua fría.','Corta todas las verduras en dados pequeños.','Prepara aliño: limón, aceite, mostaza y sal.','Mezcla lentejas con verduras. Guarda el aliño aparte.']},
+  {id:33,emoji:'🫑',name:'Pimientos del piquillo con atún',cat:['fridge'],time:'20 min',portions:4,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'Rápido y proteico. Ideal para tener en nevera para cenas improvisadas.',ingredients:['1 bote pimientos del piquillo','2 latas de atún','1 cebolla pequeña','Tomate frito','Aceitunas','Aceite'],steps:['Escurre bien los pimientos y el atún.','Mezcla atún con cebolla picada y aceitunas.','Rellena los pimientos con cuidado.','Sirve sobre una cama de tomate frito.','Guarda en nevera en recipiente hermético.']},
+  {id:34,emoji:'🌿',name:'Espinacas con pasas y piñones',cat:['veggie','fridge','quick'],time:'10 min',portions:3,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'Guarnición rápida para toda la semana. No apta para congelar.',ingredients:['400g espinacas frescas','Pasas','Piñones','2 dientes ajo','Aceite','Sal'],steps:['Tuesta los piñones en sartén seca. Reserva.','Dora el ajo laminado en aceite.','Añade espinacas y pasas. Saltea 3 min.','Incorpora los piñones y ajusta sal.','Enfría rápido y guarda en nevera.']},
+  {id:35,emoji:'🥕',name:'Zanahorias asadas con miel y comino',cat:['veggie','fridge','quick'],time:'35 min',portions:4,storage:{fridge:'4 días',freezer:null,canFreeze:false},tip:'Guarnición dulce y sabrosa. Dura 4 días en nevera.',ingredients:['800g zanahorias','Miel','Comino molido','Aceite','Sal','Tomillo fresco'],steps:['Pela las zanahorias y córtalas en bastones.','Mezcla con aceite, miel, comino y sal.','Extiende en bandeja sin amontonar.','Hornea a 200°C 25–30 min hasta dorar.','Añade tomillo y deja enfriar.']},
+  {id:36,emoji:'🥔',name:'Patatas asadas con romero',cat:['veggie','fridge'],time:'40 min',portions:4,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'Las patatas no se congelan (se vuelven arenosas). Recalienta en horno o sartén.',ingredients:['800g patatas','Romero','4 dientes ajo','Aceite','Sal gruesa','Pimentón ahumado'],steps:['Lava y corta las patatas en gajos sin pelar.','Mezcla con aceite, ajo, romero, sal y pimentón.','Extiende en bandeja y hornea a 200°C 35 min.','Deja enfriar antes de guardar.','Recalienta en horno para recuperar el crujiente.']},
+  {id:37,emoji:'🫛',name:'Judías verdes con jamón',cat:['fridge'],time:'20 min',portions:4,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'No apta para congelar. Cocina en agua abundante con sal y evita sobrecocinar.',ingredients:['600g judías verdes','100g taquitos de jamón','2 dientes ajo','Aceite','Sal'],steps:['Limpia las judías quitando los hilos.','Cuécelas en agua con sal 8–10 min (al dente).','Escurre y refresca con agua fría.','Saltea el ajo, añade el jamón y las judías.','Saltea 3 min. Enfría antes de guardar.']},
+  {id:38,emoji:'🧅',name:'Cebolla caramelizada',cat:['veggie','freeze','fridge'],time:'50 min',portions:6,storage:{fridge:'7 días',freezer:'3 meses',canFreeze:true},tip:'Uno de los básicos del batch cooking. Congela en cubiteras.',ingredients:['6 cebollas grandes','Mantequilla','Aceite','Azúcar moreno','Sal','Vinagre balsámico'],steps:['Corta cebollas en juliana muy fina.','Calienta mantequilla y aceite en sartén grande.','Añade cebollas y sal. Cocina a fuego muy bajo 40 min removiendo.','Añade azúcar moreno y cocina 10 min más hasta dorado oscuro.','Añade vinagre balsámico. Enfría antes de envasar.']},
+  {id:39,emoji:'🫘',name:'Alubias blancas con chorizo',cat:['legumes','freeze'],time:'80 min',portions:6,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Al recalentar añade un poco de agua si ha espesado demasiado.',ingredients:['500g alubias blancas','2 chorizos','1 cebolla','3 dientes ajo','Pimentón ahumado','Laurel','Aceite','Sal'],steps:['Remoja las alubias la noche anterior.','Cuece con laurel desde agua fría 60 min a fuego suave.','Sofríe cebolla y ajo. Añade chorizo en rodajas.','Añade pimentón y sofrito a las alubias. Cocina 15 min más.','Ajusta sal. Las alubias deben estar cremosas pero enteras.']},
+  {id:40,emoji:'🫘',name:'Alubias rojas con verduras',cat:['legumes','veggie','freeze'],time:'70 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Versión vegetariana rica en proteína. El pimentón ahumado da profundidad.',ingredients:['400g alubias rojas cocidas','1 pimiento','1 zanahoria','1 cebolla','Tomate triturado','Pimentón ahumado','Comino','Aceite'],steps:['Sofríe cebolla, pimiento y zanahoria 10 min.','Añade pimentón y comino. Remueve 1 min.','Incorpora el tomate y cocina 10 min.','Añade alubias y 200ml agua.','Cocina 20 min hasta que la salsa espese.']},
+  {id:41,emoji:'🍛',name:'Dal de lentejas rojas',cat:['legumes','veggie','freeze'],time:'35 min',portions:5,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Las lentejas rojas no necesitan remojo. Plato completo y proteico.',ingredients:['300g lentejas rojas','1 lata tomate','1 cebolla','3 dientes ajo','Jengibre','Cúrcuma','Garam masala','Leche de coco'],steps:['Sofríe cebolla con ajo y jengibre 6 min.','Añade las especias y remueve 1 min.','Incorpora tomate y lentejas lavadas.','Cubre con caldo (doble volumen) y cocina 20 min.','Añade leche de coco. Tritura parcialmente.']},
+  {id:42,emoji:'🫘',name:'Potaje de garbanzos y bacalao',cat:['legumes','freeze'],time:'60 min',portions:5,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'Desala el bacalao 48h cambiando el agua cada 8h.',ingredients:['400g garbanzos cocidos','300g bacalao desalado','1 cebolla','3 dientes ajo','Tomate','Pimentón','Espinacas','Aceite'],steps:['Sofríe la cebolla y el ajo. Añade tomate y pimentón.','Incorpora los garbanzos y caldo. Cocina 15 min.','Añade el bacalao desmenuzado y las espinacas.','Cocina 10 min más a fuego suave.','Ajusta sal (el bacalao ya sala).']},
+  {id:43,emoji:'🍚',name:'Arroz integral cocido (base)',cat:['veggie','fridge','quick'],time:'40 min',portions:6,storage:{fridge:'3 días',freezer:'1 mes',canFreeze:true},tip:'Para congelar: extiende en bandeja, congela 1h y luego mete en bolsa.',ingredients:['400g arroz integral','Agua o caldo','Sal','Aceite (opcional)'],steps:['Lava el arroz hasta que salga el agua clara.','Pon a hervir el doble de agua con sal.','Añade el arroz, tapa y baja al mínimo.','Cocina 35 min sin destapar.','Reposa 5 min tapado. Extiende para enfriar rápido.']},
+  {id:44,emoji:'🌾',name:'Bulgur con verduras asadas',cat:['veggie','fridge','quick'],time:'30 min',portions:4,storage:{fridge:'4 días',freezer:null,canFreeze:false},tip:'El bulgur se hidrata rápido. No se congela bien una vez hidratado.',ingredients:['250g bulgur','Pimiento rojo y amarillo','Calabacín','Berenjena','Aceite','Comino','Sal','Limón'],steps:['Asa las verduras troceadas a 200°C 25 min con aceite y sal.','Hidrata el bulgur con el doble de agua hirviendo. Tapa 15 min.','Esponja con tenedor y deja enfriar.','Mezcla con las verduras y aliña con limón y comino.','Guarda en nevera.']},
+  {id:45,emoji:'🍝',name:'Pasta con pesto de albahaca',cat:['veggie','fridge'],time:'20 min',portions:4,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'Guarda pasta y pesto por separado. El pesto dura 5 días cubierto con aceite.',ingredients:['400g pasta','60g albahaca','40g piñones','50g parmesano','1 diente ajo','Aceite AOVE','Sal'],steps:['Tuesta los piñones en sartén seca.','Tritura albahaca, piñones, ajo, queso y sal.','Añade aceite poco a poco hasta salsa homogénea.','Cuece la pasta al dente.','Mezcla con el pesto. Guarda pesto aparte.']},
+  {id:46,emoji:'🌾',name:'Taboulé de cuscús',cat:['veggie','fridge','quick'],time:'20 min',portions:4,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'Ensalada fresca. Prepara el domingo para usar como guarnición durante la semana.',ingredients:['250g cuscús','Pepino','Tomates cherry','Perejil abundante','Menta','Limón','Aceite','Sal'],steps:['Hidrata el cuscús con el mismo volumen de agua hirviendo con sal. Tapa 5 min.','Esponja con tenedor y deja enfriar.','Pica finamente el perejil, menta, pepino y tomates.','Prepara aliño: limón, aceite y sal.','Mezcla todo y refrigera. Mejor de un día para otro.']},
+  {id:47,emoji:'🍚',name:'Risotto de champiñones',cat:['veggie','fridge'],time:'35 min',portions:4,storage:{fridge:'2 días',freezer:null,canFreeze:false},tip:'No se congela. Al recalentar añade caldo caliente y remueve bien.',ingredients:['300g arroz arborio','400g champiñones','1 cebolla','100ml vino blanco','1L caldo caliente','Mantequilla','Parmesano','Sal'],steps:['Sofríe los champiñones en mantequilla hasta que suelten el agua. Reserva.','Sofríe la cebolla. Añade arroz y tuesta 2 min.','Añade el vino y remueve hasta que se absorba.','Añade caldo caliente cucharón a cucharón removiendo.','Cuando esté al dente, añade champiñones, mantequilla y parmesano.']},
+  {id:48,emoji:'🐟',name:'Bacalao al pil-pil',cat:['fridge'],time:'40 min',portions:4,storage:{fridge:'2 días',freezer:null,canFreeze:false},tip:'No apto para congelar: la salsa emulsionada se separa. Consúmelo en 2 días.',ingredients:['600g bacalao desalado','300ml aceite','4 dientes ajo','Guindilla opcional'],steps:['Confita el ajo laminado en aceite a fuego muy bajo.','Retira el ajo y reserva. Sube el fuego.','Añade el bacalao con piel arriba 4 min. Da la vuelta 3 min.','Retira el bacalao. Mueve la cazuela circular para ligar el pil-pil.','Sirve el bacalao con la salsa y el ajo.']},
+  {id:49,emoji:'🦐',name:'Gambas al ajillo',cat:['fridge','quick'],time:'10 min',portions:3,storage:{fridge:'2 días',freezer:null,canFreeze:false},tip:'No apto para congelar ya cocinado. Las gambas pierden textura.',ingredients:['400g gambas peladas','5 dientes ajo','1 guindilla','Aceite','Sal','Perejil'],steps:['Lamina el ajo y fríe en aceite abundante a fuego medio.','Añade la guindilla y las gambas.','Cocina 2–3 min a fuego alto.','Añade perejil picado y sal.','Sirve inmediatamente o refrigera rápidamente.']},
+  {id:50,emoji:'🐠',name:'Merluza en salsa verde',cat:['fridge'],time:'25 min',portions:4,storage:{fridge:'2 días',freezer:null,canFreeze:false},tip:'El pescado cocinado no aguanta bien congelado. Prepara solo para 2 días.',ingredients:['600g lomos de merluza','Perejil abundante','3 dientes ajo','Caldo de pescado','Harina','Aceite','Almejas'],steps:['Dora el ajo en aceite. Añade una cucharadita de harina y remueve.','Añade caldo de pescado y perejil picado.','Cocina la salsa 5 min hasta espesar ligeramente.','Añade la merluza y las almejas. Tapa y cocina 8 min.','Mueve la cazuela para ligar la salsa.']},
+  {id:51,emoji:'🥫',name:'Atún encebollado',cat:['fridge','quick'],time:'20 min',portions:3,storage:{fridge:'3 días',freezer:null,canFreeze:false},tip:'Rápido y proteico. Para ensaladas o con arroz durante la semana.',ingredients:['400g atún fresco en dados','2 cebollas','1 pimiento verde','Vinagre de jerez','Aceite','Laurel','Sal','Pimienta'],steps:['Corta la cebolla y pimiento en juliana fina.','Sofríe a fuego muy suave 15 min hasta pochar bien.','Añade el vinagre y el laurel. Cocina 2 min.','Sube el fuego, añade el atún y sella 2 min por lado.','No sobrecocines el atún. Salpimenta y enfría.']},
+  {id:52,emoji:'🫙',name:'Sofrito base (tomate y cebolla)',cat:['veggie','freeze','quick'],time:'35 min',portions:8,storage:{fridge:'5 días',freezer:'4 meses',canFreeze:true},tip:'La base de la cocina mediterránea. Congela en cubiteras o porciones de 100g.',ingredients:['1 kg tomates','4 cebollas','1 cabeza de ajo','Aceite','Sal','Azúcar','Laurel'],steps:['Pica la cebolla muy fina y sofríe 20 min a fuego bajo.','Añade el ajo picado y cocina 5 min más.','Incorpora el tomate rallado o triturado.','Cocina 20 min removiendo hasta que pierda el agua.','Añade sal, azúcar y laurel. Envasa.']},
+  {id:53,emoji:'🫙',name:'Salsa boloñesa de verduras',cat:['veggie','freeze'],time:'60 min',portions:6,storage:{fridge:'4 días',freezer:'3 meses',canFreeze:true},tip:'Usa lentejas para dar textura similar a la carne. Se congela igual de bien.',ingredients:['200g lentejas rojas','1 lata tomate','1 cebolla','2 zanahorias','1 apio','Vino tinto','Ajo','Aceite','Orégano'],steps:['Sofríe cebolla, zanahoria, apio y ajo finamente picados 10 min.','Añade el vino tinto y deja reducir.','Incorpora el tomate y cocina 10 min.','Añade lentejas y caldo (doble volumen). Cocina 25 min.','Las lentejas deben deshacerse para imitar la carne.']},
+  {id:54,emoji:'🟤',name:'Caldo de verduras casero',cat:['veggie','freeze'],time:'60 min',portions:8,storage:{fridge:'4 días',freezer:'4 meses',canFreeze:true},tip:'Usa los recortes de verduras de la semana. Congela en cubos de 250ml.',ingredients:['Recortes de zanahoria, puerro, apio','1 cebolla','Laurel','Pimienta','Perejil','Sal'],steps:['Coloca todas las verduras en olla con agua fría abundante.','Lleva a ebullición y baja el fuego.','Cocina a fuego suave 50 min.','Cuela el caldo y desecha los sólidos.','Enfría completamente antes de envasar.']},
+  {id:55,emoji:'🫙',name:'Salsa de pimientos asados',cat:['veggie','freeze'],time:'50 min',portions:6,storage:{fridge:'5 días',freezer:'3 meses',canFreeze:true},tip:'Salsa versátil para pasta, carnes o tostadas.',ingredients:['6 pimientos rojos','3 dientes ajo','Aceite','Sal','Vinagre de jerez','Tomillo'],steps:['Asa los pimientos enteros a 220°C 40 min dando la vuelta a mitad.','Mete en bolsa y deja sudar 15 min.','Pela, desemilla y reserva el jugo.','Tritura con ajo, aceite, vinagre y sal.','Cocina la salsa 10 min más para concentrar.']},
+  {id:56,emoji:'🥞',name:'Tortitas de avena (batch)',cat:['veggie','freeze'],time:'30 min',portions:12,storage:{fridge:'3 días',freezer:'2 meses',canFreeze:true},tip:'Congela intercalando papel vegetal. Se pueden recalentar en tostadora.',ingredients:['200g copos de avena','2 huevos','200ml leche','1 plátano maduro','Canela','Pizca sal','Aceite'],steps:['Tritura la avena hasta conseguir harina fina.','Mezcla con huevos, leche, plátano chafado, canela y sal.','Deja reposar la masa 5 min.','Cocina cucharadas de masa en sartén antiadherente 2–3 min por lado.','Enfría en rejilla antes de apilar con papel entre cada tortita.']},
+  {id:57,emoji:'🍌',name:'Muffins de plátano y nueces',cat:['veggie','freeze'],time:'35 min',portions:12,storage:{fridge:'4 días',freezer:'2 meses',canFreeze:true},tip:'Congela en bolsas individuales. Se descongelan en 1h o 30 segundos de microondas.',ingredients:['3 plátanos maduros','2 huevos','180g harina','80g azúcar moreno','1 yogur natural','80g nueces','Canela','1 sobre levadura'],steps:['Chafa los plátanos hasta hacer puré.','Mezcla con huevos, yogur y azúcar.','Añade harina tamizada con levadura y canela.','Incorpora las nueces troceadas.','Llena moldes 3/4 y hornea a 180°C 20 min.']},
+  {id:58,emoji:'🥜',name:'Granola casera',cat:['veggie'],time:'25 min',portions:10,storage:{fridge:null,freezer:null,canFreeze:false},tip:'No necesita nevera. Guarda en bote hermético a temperatura ambiente hasta 1 mes.',ingredients:['300g copos de avena','100ml miel o sirope','50ml aceite de coco','100g frutos secos','50g semillas','Canela','Sal'],steps:['Mezcla avena, frutos secos y semillas.','Calienta miel con aceite de coco. Añade canela y sal.','Mezcla bien los secos con el líquido.','Extiende en bandeja y hornea a 160°C 20 min, removiendo a mitad.','Deja enfriar completamente antes de guardar en bote hermético.']},
+  {id:59,emoji:'🫙',name:'Crema de cacahuete casera',cat:['veggie','fridge','quick'],time:'10 min',portions:8,storage:{fridge:'1 mes',freezer:null,canFreeze:false},tip:'Sin conservantes. Aguanta 1 mes en nevera. Remueve antes de usar.',ingredients:['400g cacahuetes tostados sin sal','Pizca de sal','Aceite de cacahuete opcional'],steps:['Coloca los cacahuetes en el procesador de alimentos.','Tritura varios minutos hasta conseguir mantequilla cremosa.','Añade sal y aceite si quieres textura más fluida.','Pasa a bote de cristal hermético.','Guarda en nevera hasta 1 mes.']},
+  {id:60,emoji:'🥑',name:'Guacamole fresco',cat:['veggie','fridge','quick'],time:'10 min',portions:4,storage:{fridge:'2 días',freezer:null,canFreeze:false},tip:'Cubre la superficie con film a piel (tocándola). No se congela bien.',ingredients:['3 aguacates maduros','1 tomate','1/2 cebolla','Limón','Cilantro','Sal','Jalapeño opcional'],steps:['Parte los aguacates y extrae la pulpa.','Chafa con tenedor al gusto.','Añade tomate sin semillas picado, cebolla y cilantro.','Aliña con limón y sal.','Cubre con film a piel para evitar oxidación.']},
+  {id:61,emoji:'🍳',name:'Huevos cocidos (base semanal)',cat:['fridge','quick'],time:'12 min',portions:6,storage:{fridge:'5 días',freezer:null,canFreeze:false},tip:'No se congelan. Cocina 6 cada semana: proteína rápida para ensaladas y desayunos. Guarda sin pelar.',ingredients:['6 huevos grandes','Agua','Sal'],steps:['Saca los huevos de la nevera 15 min antes.','Lleva agua a ebullición con una pizca de sal.','Introduce los huevos con cuidado.','Cocina exactamente 10 minutos.','Pasa a agua fría con hielo 5 min. Guarda sin pelar.']},
+  {id:62,emoji:'🥗',name:'Vinagreta multiuso',cat:['veggie','fridge','quick'],time:'5 min',portions:8,storage:{fridge:'2 semanas',freezer:null,canFreeze:false},tip:'Prepara un bote grande al inicio de la semana. Agita antes de cada uso.',ingredients:['100ml aceite AOVE','40ml vinagre de vino','1 cdta mostaza de Dijon','1 cdta miel','Sal','Pimienta'],steps:['Pon todos los ingredientes en un bote con tapa.','Agita vigorosamente hasta emulsionar.','Prueba y ajusta de sal, vinagre o mostaza.','Guarda en nevera.','Agita antes de cada uso.']}
+];
+
+let pantry=JSON.parse(localStorage.getItem('bc-pantry')||'[]');
+let weekPlan=JSON.parse(localStorage.getItem('bc-plan')||'{}');
+let selectedDay=null;
+let currentFilter='all';
+let currentPFilter='all';
+
+function today(){return new Date().toISOString().split('T')[0];}
+function formatDate(d){if(!d)return '';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('es-ES',{day:'numeric',month:'short'});}
+function daysUntil(d){if(!d)return 999;const n=new Date();n.setHours(0,0,0,0);const e=new Date(d+'T00:00:00');return Math.round((e-n)/86400000);}
+function expiryColor(d){if(d<0)return 'expiry-bad';if(d<=2)return 'expiry-warn';return 'expiry-ok';}
+function expiryPct(s,e){if(!s||!e)return 100;const total=daysUntil(e)+(new Date(e+'T00:00:00')-new Date(s+'T00:00:00'))/86400000;return Math.max(0,Math.min(100,(daysUntil(e)/total)*100));}
+function savePantry(){localStorage.setItem('bc-pantry',JSON.stringify(pantry));}
+function savePlan(){localStorage.setItem('bc-plan',JSON.stringify(weekPlan));}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='page-home')renderHome();
+  if(id==='page-pantry')renderPantry();
+  if(id==='page-recipes')renderRecipes();
+  if(id==='page-plan')renderPlan();
+}
+
+function setNav(idx){
+  document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===idx));
+}
+
+function handleFab(){
+  const pg=document.querySelector('.page.active').id;
+  if(pg==='page-pantry')openAddModal();
+  else if(pg==='page-plan')openPlanModal();
+  else{showPage('page-pantry');setNav(2);setTimeout(openAddModal,300);}
+}
+
+function renderHome(){
+  const d=new Date();
+  document.getElementById('today-label').textContent=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  const frozen=pantry.filter(p=>p.storage==='freezer');
+  document.getElementById('stat-stored').textContent=pantry.length;
+  document.getElementById('stat-frozen').textContent=frozen.length;
+  const expiring=pantry.filter(p=>{const d=daysUntil(p.expiry);return d>=0&&d<=2;});
+  const banner=document.getElementById('expiry-banner');
+  if(expiring.length>0){banner.classList.remove('hidden');document.getElementById('expiry-msg').textContent=`${expiring.length} plato${expiring.length>1?'s':''} próximo${expiring.length>1?'s':''} a caducar: ${expiring.map(p=>p.name).join(', ')}`;}
+  else banner.classList.add('hidden');
+  document.getElementById('home-recipes-row').innerHTML=RECIPES.slice(0,5).map(r=>recipeCardHTML(r)).join('');
+  const list=document.getElementById('home-pantry-list');
+  if(pantry.length===0)list.innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem;">Aún no has registrado platos. ¡Empieza cocinando! 🍳</div>`;
+  else list.innerHTML=pantry.slice(0,3).map(p=>pantryItemHTML(p)).join('');
+}
+
+function recipeCardHTML(r){
+  const ftag=r.storage.canFreeze?`<span class="tag tag-freeze">❄️ Congelable</span>`:`<span class="tag tag-nofreeze">🚫 No congelar</span>`;
+  return `<div class="recipe-card" onclick="openRecipe(${r.id})">
+    <div class="recipe-card-emoji">${r.emoji}</div>
+    <div class="recipe-card-name">${r.name}</div>
+    <div class="recipe-card-meta">${ftag}<span class="tag tag-time">⏱ ${r.time}</span><span class="tag tag-portions">🍽 ${r.portions} rac.</span></div>
+  </div>`;
+}
+
+function renderRecipes(){
+  document.querySelectorAll('#recipe-chips .chip').forEach(c=>{
+    c.onclick=()=>{document.querySelectorAll('#recipe-chips .chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');currentFilter=c.dataset.filter;doRenderRecipes();};
+  });
+  doRenderRecipes();
+}
+
+function doRenderRecipes(){
+  const f=currentFilter==='all'?RECIPES:RECIPES.filter(r=>r.cat.includes(currentFilter));
+  document.getElementById('recipe-grid').innerHTML=f.map(r=>recipeCardHTML(r)).join('');
+}
+
+function openRecipe(id){
+  const r=RECIPES.find(x=>x.id===id);if(!r)return;
+  const steps=r.steps.map((s,i)=>`<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('');
+  const fridgeRow=`<div class="storage-guide-row"><span class="storage-guide-icon">🧊</span><div class="storage-guide-info"><div class="storage-guide-label">Nevera</div><div class="storage-guide-val">${r.storage.fridge||'No recomendado'}</div></div></div>`;
+  const freezeRow=r.storage.canFreeze?`<div class="storage-guide-row"><span class="storage-guide-icon">❄️</span><div class="storage-guide-info"><div class="storage-guide-label">Congelador</div><div class="storage-guide-val">${r.storage.freezer}</div></div></div>`:`<div class="storage-guide-row"><span class="storage-guide-icon">🚫</span><div class="storage-guide-info"><div class="storage-guide-label">Congelador</div><div class="storage-guide-val" style="color:var(--danger)">No apto para congelar</div></div></div>`;
+  document.getElementById('recipe-modal-body').innerHTML=`
+    <div class="recipe-detail-emoji">${r.emoji}</div>
+    <div class="modal-title">${r.name}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px;">
+      ${r.storage.canFreeze?'<span class="tag tag-freeze">❄️ Congelable</span>':'<span class="tag tag-nofreeze">🚫 No congelar</span>'}
+      <span class="tag tag-time">⏱ ${r.time}</span>
+      <span class="tag tag-portions">🍽 ${r.portions} raciones</span>
+    </div>
+    <div class="detail-section"><h4>Ingredientes</h4><div style="display:flex;flex-wrap:wrap;gap:8px;">${r.ingredients.map(i=>`<span style="background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:5px 12px;font-size:.8rem;">${i}</span>`).join('')}</div></div>
+    <div class="detail-section"><h4>Elaboración</h4>${steps}</div>
+    <div class="detail-section"><h4>Guía de almacenamiento</h4>
+      <div class="storage-guide">${fridgeRow}${freezeRow}</div>
+      <div style="margin-top:12px;background:rgba(200,245,106,.07);border:1px solid rgba(200,245,106,.2);border-radius:var(--radius-sm);padding:12px 14px;font-size:.82rem;color:var(--accent2);line-height:1.6;">💡 ${r.tip}</div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-ghost" onclick="closeModal('recipe-modal')">Cerrar</button>
+      <button class="btn btn-primary btn-full" onclick="closeModal('recipe-modal');openAddFromRecipe(${r.id})">+ Añadir a despensa</button>
+    </div>`;
+  document.getElementById('recipe-modal').classList.add('open');
+}
+
+function pantryItemHTML(item){
+  const days=daysUntil(item.expiry);
+  const pct=expiryPct(item.date,item.expiry);
+  const col=expiryColor(days);
+  const sl={fridge:'🧊 Nevera',freezer:'❄️ Congelador',room:'🌡️ Ambiente'}[item.storage]||item.storage;
+  const et=item.expiry?(days<0?`<span style="color:var(--danger)">Caducado</span>`:days===0?`<span style="color:var(--accent3)">Caduca hoy</span>`:`Caduca en ${days} días`):'Sin fecha';
+  return `<div class="storage-item" onclick="openPantryDetail('${item.id}')">
+    <div class="storage-item-icon">${item.emoji||'🍱'}</div>
+    <div class="storage-item-info">
+      <div class="storage-item-name">${item.name}</div>
+      <div class="storage-item-date">${sl} · ${formatDate(item.date)} · ${et}</div>
+      ${item.expiry?`<div class="expiry-bar"><div class="expiry-fill ${col}" style="width:${pct}%"></div></div>`:''}
+    </div>
+    <div class="storage-item-qty">${item.qty}</div>
+  </div>`;
+}
+
+function renderPantry(){
+  document.querySelectorAll('#pantry-chips .chip').forEach(c=>{
+    c.onclick=()=>{document.querySelectorAll('#pantry-chips .chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');currentPFilter=c.dataset.pfilter;doRenderPantry();};
+  });
+  doRenderPantry();
+}
+
+function doRenderPantry(){
+  const f=currentPFilter==='all'?pantry:pantry.filter(p=>p.storage===currentPFilter);
+  const list=document.getElementById('pantry-list');
+  const empty=document.getElementById('pantry-empty');
+  if(f.length===0){list.innerHTML='';empty.classList.remove('hidden');}
+  else{empty.classList.add('hidden');list.innerHTML=f.map(p=>pantryItemHTML(p)).join('');}
+}
+
+function openAddModal(){
+  document.getElementById('add-date').value=today();
+  document.getElementById('add-modal').classList.add('open');
+}
+
+function openAddFromRecipe(id){
+  const r=RECIPES.find(x=>x.id===id);
+  if(r){
+    document.getElementById('add-name').value=r.name;
+    document.getElementById('add-emoji').value=r.emoji;
+    document.getElementById('add-qty').value=r.portions;
+    document.getElementById('add-storage').value=r.storage.canFreeze?'freezer':'fridge';
+    const d=new Date();
+    if(r.storage.canFreeze)d.setDate(d.getDate()+60);else d.setDate(d.getDate()+4);
+    document.getElementById('add-expiry').value=d.toISOString().split('T')[0];
+  }
+  document.getElementById('add-date').value=today();
+  document.getElementById('add-modal').classList.add('open');
+}
+
+function savePantryItem(){
+  const name=document.getElementById('add-name').value.trim();
+  if(!name){alert('Indica el nombre del plato');return;}
+  const item={id:Date.now().toString(),name,emoji:document.getElementById('add-emoji').value||'🍱',qty:parseInt(document.getElementById('add-qty').value)||1,storage:document.getElementById('add-storage').value,date:document.getElementById('add-date').value,expiry:document.getElementById('add-expiry').value,notes:document.getElementById('add-notes').value.trim()};
+  pantry.unshift(item);savePantry();closeModal('add-modal');
+  ['add-name','add-emoji','add-notes','add-expiry'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('add-qty').value=4;
+  doRenderPantry();renderHome();
+}
+
+function openPantryDetail(itemId){
+  const item=pantry.find(p=>p.id===itemId);if(!item)return;
+  const days=daysUntil(item.expiry);
+  const sl={fridge:'🧊 Nevera',freezer:'❄️ Congelador',room:'🌡️ Ambiente'}[item.storage];
+  document.getElementById('recipe-modal-body').innerHTML=`
+    <div class="recipe-detail-emoji">${item.emoji}</div>
+    <div class="modal-title">${item.name}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 20px;">
+      <span class="tag tag-portions">🍽 ${item.qty} rac.</span>
+      <span class="tag" style="border-color:var(--border);color:var(--muted);">${sl}</span>
+    </div>
+    <div class="storage-guide">
+      <div class="storage-guide-row"><span class="storage-guide-icon">📅</span><div class="storage-guide-info"><div class="storage-guide-label">Envasado</div><div class="storage-guide-val">${formatDate(item.date)}</div></div></div>
+      <div class="storage-guide-row"><span class="storage-guide-icon">⏱️</span><div class="storage-guide-info"><div class="storage-guide-label">Caducidad</div><div class="storage-guide-val">${item.expiry?(days<0?'Caducado':`${formatDate(item.expiry)} (${days} días)`):'No indicada'}</div></div></div>
+      ${item.notes?`<div class="storage-guide-row"><span class="storage-guide-icon">📝</span><div class="storage-guide-info"><div class="storage-guide-label">Notas</div><div class="storage-guide-val">${item.notes}</div></div></div>`:''}
+    </div>
+    <div class="btn-group" style="flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <button class="btn btn-ghost" onclick="changePantryQty('${item.id}',-1)">− Ración</button>
+        <span style="flex:1;text-align:center;font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--accent);">${item.qty}</span>
+        <button class="btn btn-ghost" onclick="changePantryQty('${item.id}',+1)">+ Ración</button>
+      </div>
+      <button class="btn btn-danger btn-full" onclick="deletePantryItem('${item.id}')">🗑 Eliminar plato</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('recipe-modal')">Cerrar</button>
+    </div>`;
+  document.getElementById('recipe-modal').classList.add('open');
+}
+
+function changePantryQty(id,delta){
+  const item=pantry.find(p=>p.id===id);if(!item)return;
+  item.qty=Math.max(0,item.qty+delta);
+  if(item.qty===0){deletePantryItem(id);return;}
+  savePantry();openPantryDetail(id);doRenderPantry();
+}
+
+function deletePantryItem(id){
+  if(!confirm('¿Eliminar este plato?'))return;
+  pantry=pantry.filter(p=>p.id!==id);savePantry();closeModal('recipe-modal');doRenderPantry();renderHome();
+}
+
+function renderPlan(){
+  const grid=document.getElementById('week-grid');
+  const days=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const td=new Date();td.setHours(0,0,0,0);
+  const dow=(td.getDay()+6)%7;
+  const monday=new Date(td);monday.setDate(td.getDate()-dow);
+  grid.innerHTML=days.map((d,i)=>{
+    const cell=new Date(monday);cell.setDate(monday.getDate()+i);
+    const key=cell.toISOString().split('T')[0];
+    const isToday=cell.getTime()===td.getTime();
+    const hasMeals=weekPlan[key]&&weekPlan[key].length>0;
+    if(!selectedDay)selectedDay=key;
+    return `<div class="day-cell${isToday?' today':''}${selectedDay===key?' active':''}" onclick="selectDay('${key}','${d}')">
+      <div class="day-name">${d}</div><div class="day-num">${cell.getDate()}</div>${hasMeals?'<div class="day-dot"></div>':''}
+    </div>`;
+  }).join('');
+  if(!selectedDay)selectedDay=monday.toISOString().split('T')[0];
+  showDayMeals(selectedDay,days[dow]||'Hoy');
+}
+
+function selectDay(key,label){selectedDay=key;renderPlan();}
+
+function showDayMeals(key,label){
+  document.getElementById('selected-day-label').textContent=label||key;
+  const meals=weekPlan[key]||[];
+  const list=document.getElementById('day-meals-list');
+  if(meals.length===0)list.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:.85rem;">Sin planificar. Usa + Añadir para agregar comidas.</div>`;
+  else list.innerHTML=meals.map((m,i)=>`<div class="meal-plan-item"><div class="meal-plan-type">${m.type}</div><div class="meal-plan-emoji">${m.emoji}</div><div class="meal-plan-name">${m.dish}</div><button onclick="deletePlanItem('${key}',${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button></div>`).join('');
+}
+
+function openPlanModal(){
+  if(!selectedDay)return;
+  const d=new Date(selectedDay+'T00:00:00');
+  document.getElementById('plan-modal-title').textContent='Añadir al '+d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric'});
+  const sel=document.getElementById('plan-dish');
+  const all=[...RECIPES.map(r=>({name:r.name,emoji:r.emoji})),...pantry.map(p=>({name:p.name+' (despensa)',emoji:p.emoji||'🍱'}))];
+  sel.innerHTML='<option value="">— Elige —</option>'+all.map((d,i)=>`<option value="${i}">${d.emoji} ${d.name}</option>`).join('');
+  sel._dishes=all;
+  document.getElementById('plan-modal').classList.add('open');
+}
+
+function savePlanItem(){
+  const sel=document.getElementById('plan-dish');
+  const idx=parseInt(sel.value);
+  if(isNaN(idx)){alert('Elige un plato');return;}
+  const dish=sel._dishes[idx];
+  if(!weekPlan[selectedDay])weekPlan[selectedDay]=[];
+  weekPlan[selectedDay].push({type:document.getElementById('plan-meal-type').value,dish:dish.name,emoji:dish.emoji});
+  savePlan();closeModal('plan-modal');renderPlan();
+}
+
+function deletePlanItem(key,idx){weekPlan[key].splice(idx,1);savePlan();renderPlan();}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+
+renderHome();
+renderRecipes();
+</script>
+</body>
+</html>
